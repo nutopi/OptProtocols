@@ -1,4 +1,4 @@
-from opentrons import labware, instruments, robot
+from opentrons import labware, instruments
 
 # single channel p50 pipette volumes checking
 
@@ -8,7 +8,10 @@ tips300ul_rack1 = labware.load('opentrons-tiprack-300ul', slot='1')
 # trash = labware.load('trash-box', slot='12')
 # waste = labware.load('tube-rack-15_50ml', slot='6')
 
-single = instruments.P50_Single(mount='left',
+# mount oznacza po ktorej stronie jest pipeta
+# u nas: single: right
+# multi: left
+single = instruments.P50_Single(mount='right',
                                 tip_racks=[tips300ul_rack1],
                                 aspirate_flow_rate=100,
                                 dispense_flow_rate=100)
