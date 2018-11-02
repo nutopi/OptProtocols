@@ -20,7 +20,9 @@ multi = instruments.P300_Multi(mount='left',
                                tip_racks=[tips300ul_rack1, tips300ul_rack2],
                                trash_container=trash,
                                aspirate_flow_rate=100,
-                               dispense_flow_rate=100)
+                               dispense_flow_rate=100,
+                               min_volume=20,
+                               max_volume=1100)
 
 for i in range(7):
     single.distribute(25, stds_tubes(i), white_plate(i))
@@ -28,8 +30,13 @@ for i in range(7):
 
 single.distribute(25, trough_rack(0), white_plate('H1'))
 
-for i in range(16, 96):
-    multi.distribute(trough_rack(0), white_plate(i))
+multi.aspirate(1000, trough_rack(0))
+i = 16
+while (i < 96):
+    multi.dispense(25, white_plate(i))
+    # multi.distribute(25,trough_rack(0), white_plate(i))
+    i += 1
     if i % 8 == 0:
         if (i / 8 + 1) % 2 == 0:
             i = i + 8
+
