@@ -5,16 +5,15 @@ from opentrons import labware, instruments, robot
 trough_rack = labware.load('trough-12row', slot='2')
 water_tubes = labware.load('tube-rack-2ml', slot='3')
 tips300ul_rack1 = labware.load('opentrons-tiprack-300ul', slot='1')
-trash = labware.load('trash-box', slot='12')
+# trash = labware.load('trash-box', slot='12')
 # waste = labware.load('tube-rack-15_50ml', slot='6')
 
 single = instruments.P50_Single(mount='left',
                                 tip_racks=[tips300ul_rack1],
-                                trash_container=trash,
                                 aspirate_flow_rate=100,
                                 dispense_flow_rate=100)
 
-
+single.pick_up_tip()
 class DistributeVolume():
 
     def dispensing(self, destVol, start, end):
