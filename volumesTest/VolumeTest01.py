@@ -17,14 +17,16 @@ single = instruments.P50_Single(mount='right',
                                 dispense_flow_rate=100)
 
 single.pick_up_tip()
+
+
 class DistributeVolume():
 
     def dispensing(self, destVol, start, end):
         for i in range(start, end):
             volume = single.current_volume
-        if volume < destVol:
-            single.dispense(volume, trough_rack(0))
-            single.aspirate(single.max_volume, trough_rack(0))
+            if volume < destVol:
+                single.dispense(volume, trough_rack(0))
+                single.aspirate(single.max_volume, trough_rack(0))
         single.dispense(destVol, water_tubes(i))
 
         single.dispense(single.current_volume, trough_rack(0))
@@ -36,5 +38,3 @@ b = 25
 distributeVol = DistributeVolume()
 distributeVol.dispensing(a, 0, 12)
 distributeVol.dispensing(b, 12, 24)
-
-
