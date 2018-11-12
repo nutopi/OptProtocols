@@ -24,17 +24,19 @@ class DistributeVolume():
     def dispensing(self, destVol, start, end):
         for i in range(start, end):
             volume = single.current_volume
+            # print("TUTAJ DUPA: " + str(volume))
+            print("TUTAJ DUPA ", i, volume)
             if volume < destVol:
                 single.dispense(volume, trough_rack(0))
                 single.aspirate(single.max_volume, trough_rack(0))
-        single.dispense(destVol, water_tubes(i))
+            single.dispense(destVol, water_tubes(i))
 
         single.dispense(single.current_volume, trough_rack(0))
 
 
-a = 15
-b = 25
+destVol1 = 15
+destVol2 = 25
 
 distributeVol = DistributeVolume()
-distributeVol.dispensing(a, 0, 12)
-distributeVol.dispensing(b, 12, 24)
+distributeVol.dispensing(destVol1, 0, 12)
+distributeVol.dispensing(destVol2, 12, 24)
