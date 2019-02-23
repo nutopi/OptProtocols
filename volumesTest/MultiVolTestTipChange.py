@@ -21,35 +21,36 @@ multi = instruments.P300_Multi(mount='left',
                                tip_racks=[tip_rack1, tip_rack2, tip_rack3],
                                aspirate_flow_rate=100,
                                dispense_flow_rate=100)
-multi.pick_up_tip()
 
 
 def multi_dispensing(disp_vol, times):
     for i in range(times):
+        multi.pick_up_tip()
         curr_vol = multi.current_volume
         if curr_vol < disp_vol:
             multi.dispense(curr_vol, trough_rack(6))
-            multi.aspirate(disp_vol, trough_rack(6))
+            multi.aspirate(multi.max_volume, trough_rack(6))
         multi.dispense(disp_vol, tray)
         robot.pause()
-        print(disp_vol, ' ul dispensed ', i+1, ' time')
+        # TODO
+        print(disp_vol, ' ul dispensed ', i + 1, ' time')
         multi.drop_tip()
-        multi.pick_up_tip()
 
     robot.home()
 
 
 def multi_transfering(disp_vol, times):
     for i in range(times):
+        multi.pick_up_tip()
         multi.aspirate(disp_vol, trough_rack(6))
         multi.dispense(disp_vol, tray)
         multi.blow_out(tray)
         robot.pause()
-        print(disp_vol, ' ul dispensed ', i+1, ' time')
+        print(disp_vol, ' ul dispensed ', i + 1, ' time')
         multi.drop_tip()
-        multi.pick_up_tip()
 
     robot.home()
+
 
 # *************************************** #
 # each channel 4 times
