@@ -32,7 +32,7 @@ def multi_dispensing(disp_vol, times):
             multi.aspirate(multi.max_volume, trough_rack(6))
         multi.dispense(disp_vol, tray)
         robot.pause()
-        # TODO
+        # TODO find a way to print text in opentrons api while robot working
         print(disp_vol, ' ul dispensed ', i + 1, ' time')
         multi.drop_tip()
 
