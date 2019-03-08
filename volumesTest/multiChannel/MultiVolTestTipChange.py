@@ -18,7 +18,7 @@ tip_racks = [tip_rack1, tip_rack2, tip_rack3]
 # tips300ul_rack1 = labware.load('opentrons-tiprack-300ul', slot='10')
 
 multi = instruments.P300_Multi(mount='left',
-                               tip_racks=[tip_rack1, tip_rack2, tip_rack3],
+                               tip_racks=tip_racks,
                                aspirate_flow_rate=100,
                                dispense_flow_rate=100)
 
