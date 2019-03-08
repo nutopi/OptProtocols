@@ -49,24 +49,24 @@ def sample_dispensing(sample_vol):
 
 # conjugate adding
 def conjugate_transfering(conj_vol):
+    multi.start_at_tip(tip_rack1.cols(1))
     multi.pick_up_tip()
-    for i in range(6):
+    for i in range(0, 12, 2):
         multi.aspirate(conj_vol, trough_rack(0))
-        multi.dispense(conj_vol, white_plate.cols(i * 2))
-        multi.blow_out(white_plate.cols(i * 2))
+        multi.dispense(conj_vol, white_plate.cols(i))
+        multi.blow_out(white_plate.cols(i))
         print(conj_vol, ' ul of conjugate added into the ', i + 1, ' column of white plate.')
     multi.drop_tip()
 
 
 # from white plate to clear plate dispensing
 def white_to_clear():
-    for i in range(6):
-        k = 2 * i
+    for i in range(0, 12, 2):
         multi.pick_up_tip()
-        multi.mix(4, 100, white_plate.cols(k))
         # mix(repetitions, volume, location)
-        multi.aspirate(multi.max_volume, white_plate.cols(k))
-        for j in range(k, k + 1):
+        multi.mix(4, 100, white_plate.cols(i))
+        multi.aspirate(200, white_plate.cols(i))
+        for j in range(i, i + 1):
             multi.dispense(100, clear_plate.cols(j))
         multi.drop_tip()
 
@@ -75,12 +75,12 @@ def white_to_clear():
 def waste():
     for i in range(11):
         multi.pick_up_tip()
-        multi.aspirate(multi.max_volume, clear_plate.cols(i))
+        multi.aspirate(200, clear_plate.cols(i))
         multi.drop_tip()
 
 
 # washing
-def washing():
+def washing(wash_number):
     for i in range(wash_number):
         multi.pick_up_tip()
         for j in range(11):
@@ -89,7 +89,9 @@ def washing():
         multi.drop_tip()
         for j in range(11):
             multi.pick_up_tip()
-            multi.aspirate(multi.max_volume, clear_plate.cols(j))
+            multi.aspirate(250, clear_plate.cols(j))
+            multi.dispense(250, robot.fixed_trash)
+            multi.aspirate(250, clear_plate.cols(j))
             multi.drop_tip()
         print(i + 1, ' wash cycle finished.')
 
@@ -97,10 +99,9 @@ def washing():
 # TMB adding
 def TMB_dispensing():
     multi.pick_up_tip()
-
-    for i in range(0, 10, 3):
-        multi.aspirate(multi.max_volume, trough_rack(11))
-        for j in range(i, i + 3):
+    for i in range(0, 11, 2):
+        multi.aspirate(200, trough_rack(11))
+        for j in range(i, i + 2):
             multi.dispense(100, clear_plate.cols(j))
     multi.drop_tip()
 
@@ -108,9 +109,9 @@ def TMB_dispensing():
 # Stop Solution adding
 def stopping():
     multi.pick_up_tip()
-    for i in range(0, 10, 3):
-        multi.aspirate(multi.max_volume, trough_rack(2))
-        for j in range(i, i + 3):
+    for i in range(0, 11, 2):
+        multi.aspirate(200, trough_rack(2))
+        for j in range(i, i + 2):
             multi.dispense(100, clear_plate.cols(j))
     multi.drop_tip()
 
@@ -118,7 +119,7 @@ def stopping():
 # ******************************************************* #
 sample_volA = 25
 conj_volA = 225
-wash_number = 5
+wash_numberA = 5
 
 sample_dispensing(sample_volA)
 
@@ -132,40 +133,37 @@ print(
 conjugate_transfering(conj_volA)
 white_to_clear()
 
-# stop for sealing tape sticking and for 1-hour incubation
+print('Take out the clear plate, stick sealing tape on it and hide under styro-box.'
+      'Then press RESUME to start count down of 1h incubation')
 robot.pause()
-# TODO
-print('Take out white plate (5th slot).'
-      'Change tips for a new full tip rack on the 1st slot.'
-      'Take out rack with 15ml falcon with PLATE QC Sample (6th slot).'
-      'Put a container with washing buffer on the 6th slot.'
-      'Press RESUME after 1h incubation.')
 
-# print('Time remaining: ', 3600-time.process_time()) ???
+# TODO
+print('Change empty tip racks for new ones.'
+      'Take out white plate (5th slot).'
+      'Take out rack with 15ml falcon with PLATE QC Sample (6th slot).'
+      'Put a container with washing buffer on the 6th slot.')
+# stop for sealing tape sticking and for 1-hour incubation
+multi.reset()
+WB_container = labware.load('trash-box', slot='5', share=True)
+
+# TODO print('Time remaining: ', 3600-time.process_time()) ???
 time.sleep(60 * 60)
 
-WB_container = labware.load('trash-box', slot='6', share=True)
-multi.reset()
-# TODO assert
-# multi = instruments.P300_Multi(mount='left',
-#                                tip_racks=tip_racks)
-
 waste()
-washing()
+washing(wash_numberA)
 
 # stop for checking air bubbles
-robot.pause()
 print(
     'Take the clear plate out and check if there is no air bubbles in the wells. '
     'Pour TMB into the last column of trough on the 3rd slot. '
     'Then press RESUME button.')
+robot.pause()
 
 thread = Thread(target=TMB_dispensing)
 thread.start()
-
-# stop for 20min incubation, for sealing tape sticking and unsticking
+# TODO print('Stop for 20min incubation, for sealing tape sticking and unsticking')
 time.sleep(20 * 60)
 
-# print('Time remaining: ', 20*60-time.process_time()) ???
+# TODO print('Time remaining: ', 20*60-time.process_time()) ???
 stopping()
 print('ELISA with 100% Plate QC Sample in duplicates way finished. Congratulations!')
