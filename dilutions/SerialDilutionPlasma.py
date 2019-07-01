@@ -80,3 +80,7 @@ def serial_dil(diff, final_vol, tube_amount, begin_vol):
 
     # wywolanie funkcji
         tube_amount = round(final_vol / diff)
+        diff = 6.6
+        final_vol=600
+        begin_vol=40
+
