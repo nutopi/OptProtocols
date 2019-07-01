@@ -16,7 +16,6 @@ def serial_dil(diff, final_vol, tube_amount, begin_vol):
     tubes2 = labware.load('tube_2ml_rack_35', slot='2)
     tubes3 = labware.load('tube_2ml_rack_35', slot='3)
     tip_rack_small = labware.load('opentrons-tiprack-300ul', slot='4)
-    # TODO: check the big tip rack
     tip_rack_big = labware.load('tiprack-1000ul', slot='5')
     plasma_falcon = labware.load('opentrons-tuberack-15_50ml', slot='6')
 
