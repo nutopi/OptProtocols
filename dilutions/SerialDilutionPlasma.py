@@ -37,6 +37,7 @@ def serial_dil(begin_vol, final_vol, tube_amount):
                                           dispense_flow_rate=100)
 
     current_vol = begin_vol
+    diff = round(final_vol / tube_amount)
 
     # dispensing plasma A from 0 ul to final volume
     single50.pick_up_tip()
@@ -110,8 +111,8 @@ def serial_dil(begin_vol, final_vol, tube_amount):
 # ****************************************************************************************#
 
 # wywolanie funkcji
-begin_vol1 = 10000
+begin_vol1 = 30000
 final_vol1 = 600
-tube_amount1 = 10
-diff = round(final_vol1 / tube_amount1)
+tube_amount1 = 35
+#diff = round(final_vol1 / tube_amount1)
 serial_dil(begin_vol1, final_vol1, tube_amount1)
