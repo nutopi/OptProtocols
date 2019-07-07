@@ -3,9 +3,6 @@ import math
 
 
 def serial_dil(begin_vol, final_vol, tube_amount):
-    # TODO make a condition to check
-    # begin_vol > final_vol * needed_tube
-
     # creates custom labware if currently not created
     tube_2ml_rack_35 = "tube_2ml_rack_35"
     if tube_2ml_rack_35 not in labware.list():
@@ -65,8 +62,8 @@ def dispense_plasma(is_increase, needed_tube, diff, final_vol, single50, single1
     single50.pick_up_tip()
     single1000.pick_up_tip()
 
-    counter_single50 = 1
-    counter_single1000 = 1
+    counter_single50 = 0
+    counter_single1000 = 0
 
     for i in range(needed_tube):
         current_tube = i + 1
@@ -122,17 +119,17 @@ def calc_min_begin_vol(needed_tube, diff):
     return calculated_min
 
 
+# method for changing pipette tip for 5 pipetting cycles
 def check_if_tip_replace(pipette, counter_pipette):
-    if counter_pipette % 5 == 0:
+    if counter_pipette % 5 == 0 and counter_pipette != 0:
         pipette.drop_tip()
         pipette.pick_up_tip()
 
 
 # ****************************************************************************************#
 
-# wywolanie funkcji
+# invoke method
 begin_vol1 = 30000
 final_vol1 = 600
 tube_amount1 = 35
-# diff = round(final_vol1 / tube_amount1)
 serial_dil(begin_vol1, final_vol1, tube_amount1)
