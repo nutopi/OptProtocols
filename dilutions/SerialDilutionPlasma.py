@@ -43,8 +43,12 @@ def serial_dil(begin_vol, final_vol, tube_amount):
     # TODO printout to opentrons app
     print(needed_tube, 'tubes is needed.')
 
+    if begin_vol < calc_min_begin_vol(needed_tube, diff):
+        print('Begin volume is too little. Pour more liquid into the falcon.')
+        return
+
     # dispensing plasma A from 0 ul to final volume
-    dispense_plasma(True, needed_tube, diff, final_vol, single50, single1000, plasma_falcon, tubes, current_vol)
+    dispense_plasma(True, needed_tube, diff, final_vol, single50, single1000, plasma_falcon('A3'), tubes, current_vol)
 
     current_vol = begin_vol
 
@@ -52,12 +56,12 @@ def serial_dil(begin_vol, final_vol, tube_amount):
     tubes = [tubes1, tubes2, tubes3, tubes4]
 
     # dispensing plasma B from final volume to 0 ul
-    dispense_plasma(False, needed_tube, diff, final_vol, single50, single1000, plasma_falcon, tubes, current_vol)
+    dispense_plasma(False, needed_tube, diff, final_vol, single50, single1000, plasma_falcon('A4'), tubes, current_vol)
 
     print(needed_tube, 'dilutions prepared.')
 
 
-def dispense_plasma(is_increase, needed_tube, diff, final_vol, single50, single1000, plasma_falcon, tubes, current_vol):
+def dispense_plasma(is_increase, needed_tube, diff, final_vol, single50, single1000, source, tubes, current_vol):
     single50.pick_up_tip()
     single1000.pick_up_tip()
 
@@ -67,23 +71,23 @@ def dispense_plasma(is_increase, needed_tube, diff, final_vol, single50, single1
         if current_vol >= 5000:
             height = 0.0018 * current_vol - 109
             if transfer_vol < 100:
-                single50.transfer(transfer_vol, plasma_falcon('A3').top(height), tubes, new_tip='never')
+                single50.transfer(transfer_vol, source.top(height), tubes, new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
                 print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
             else:
-                single1000.transfer(transfer_vol, plasma_falcon('A3').top(height), tubes, new_tip='never')
+                single1000.transfer(transfer_vol, source.top(height), tubes, new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
                 print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
         else:
             if transfer_vol < 100:
-                single50.transfer(transfer_vol, plasma_falcon('A3').bottom(3), tubes, new_tip='never')
+                single50.transfer(transfer_vol, source.bottom(3), tubes, new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
                 print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
             else:
-                single1000.transfer(transfer_vol, plasma_falcon('A3').bottom(3), tubes, new_tip='never')
+                single1000.transfer(transfer_vol, source.bottom(3), tubes, new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
                 print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
@@ -97,6 +101,13 @@ def calc_transfer_vol(is_increase, final_vol, diff, iteration):
         return iteration * diff
     else:
         return final_vol - iteration * diff
+
+
+def calc_min_begin_vol(needed_tube, diff):
+    calculated_min = 0
+    for i in range(needed_tube):
+        calculated_min = calculated_min + i * diff
+    return calculated_min
 
 
 # ****************************************************************************************#
