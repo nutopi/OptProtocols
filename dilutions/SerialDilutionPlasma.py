@@ -69,36 +69,36 @@ def dispense_plasma(is_increase, needed_tube, diff, final_vol, single50, single1
         current_tube = i + 1
         transfer_vol = calc_transfer_vol(is_increase, final_vol, diff, i)
         if current_vol >= 5000:
-            height = 0.0018 * current_vol - 109
+            height = 0.0018 * current_vol - 114
             if transfer_vol < 100:
                 check_if_tip_replace(single50, counter_single50)
-                single50.transfer(transfer_vol, source.top(height), tubes, new_tip='never')
+                single50.transfer(transfer_vol, source.top(height), which_well_dest(tubes, i), new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
-                print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
+                print(transfer_vol, ' ul of plasma added to tube ', current_tube)
                 counter_single50 = counter_single50 + 1
             else:
                 check_if_tip_replace(single1000, counter_single1000)
-                single1000.transfer(transfer_vol, source.top(height), tubes, new_tip='never')
+                single1000.transfer(transfer_vol, source.top(height), which_well_dest(tubes, i), new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
-                print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
+                print(transfer_vol, ' ul of plasma added to tube ', current_tube)
                 counter_single1000 = counter_single1000 + 1
         else:
             if transfer_vol < 100:
                 check_if_tip_replace(single50, counter_single50)
-                single50.transfer(transfer_vol, source.bottom(3), tubes, new_tip='never')
+                single50.transfer(transfer_vol, source.bottom(3), which_well_dest(tubes, i), new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
-                print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
+                print(transfer_vol, ' ul of plasma added to tube ', current_tube)
                 counter_single50 = counter_single50 + 1
 
             else:
                 check_if_tip_replace(single1000, counter_single1000)
-                single1000.transfer(transfer_vol, source.bottom(3), tubes, new_tip='never')
+                single1000.transfer(transfer_vol, source.bottom(3), which_well_dest(tubes, i), new_tip='never')
                 current_vol = current_vol - transfer_vol
                 # print('current volume of plasma A: ', current_vol)
-                print(transfer_vol, ' ul of plasma A added to tube ', current_tube)
+                print(transfer_vol, ' ul of plasma added to tube ', current_tube)
                 counter_single1000 = counter_single1000 + 1
 
     single50.drop_tip()
@@ -124,6 +124,19 @@ def check_if_tip_replace(pipette, counter_pipette):
     if counter_pipette % 5 == 0 and counter_pipette != 0:
         pipette.drop_tip()
         pipette.pick_up_tip()
+
+
+# destination place iterating
+def which_well_dest(tubes, iteration):
+    tubes_amount_in_rack = 35
+    if iteration < tubes_amount_in_rack:
+        return tubes[0][iteration]
+    elif (iteration >= tubes_amount_in_rack) and (iteration < tubes_amount_in_rack * 2):
+        return tubes[1][iteration - tubes_amount_in_rack]
+    elif (iteration >= tubes_amount_in_rack * 2) and (iteration < tubes_amount_in_rack * 3):
+        return tubes[2][iteration - (tubes_amount_in_rack * 2)]
+    elif (iteration >= tubes_amount_in_rack * 3) and (iteration < tubes_amount_in_rack * 4):
+        return tubes[3][iteration - (tubes_amount_in_rack * 3)]
 
 
 # ****************************************************************************************#
