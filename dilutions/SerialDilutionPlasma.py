@@ -61,89 +61,41 @@ def serial_dil(begin_vol, final_vol, tube_amount):
     print(tube_amount, 'dilutions prepared.')
 
 
+# main method for dispening plasma
 def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1000, source, tubes, current_vol):
     single50.pick_up_tip()
     single1000.pick_up_tip()
+
+    counter_pipette = 0
 
     for i in range(tube_amount):
         current_tube = i + 1
         transfer_vol = calc_transfer_vol(is_increase, final_vol, diff, i)
 
-        counter_pipette = 0
+        used_pipette = which_pipette(transfer_vol, single50, single1000)
 
-        check_if_tip_replace(which_pipette(transfer_vol, single50, single1000), counter_pipette)
-        which_pipette(transfer_vol, single50, single1000).transfer(transfer_vol,
-                                                                   source_aspirating_height(current_vol, source),
-                                                                   which_well_dest(tubes, i).top(-15), new_tip='never')
-        for b in range(3):
-            which_pipette(transfer_vol, single50, single1000).blow_out()
+        check_if_tip_replace(used_pipette, counter_pipette)
+        used_pipette.transfer(transfer_vol,
+                              source_aspirating_height(current_vol, source),
+                              which_well_dest(tubes, i).top(-15), new_tip='never')
+
+        blow_outs(3, used_pipette)
 
         current_vol = current_vol - transfer_vol
         print(transfer_vol, ' ul of plasma added to tube ', current_tube)
         counter_pipette = counter_pipette + 1
 
-    # counter_single50 = 0
-    # counter_single1000 = 0
-
-    # for i in range(tube_amount):
-    #     current_tube = i + 1
-    #     transfer_vol = calc_transfer_vol(is_increase, final_vol, diff, i)
-    #     if current_vol >= 5000:
-    #         height = 0.0018 * current_vol - 118
-    #         if transfer_vol < 100:
-    #             check_if_tip_replace(single50, counter_single50)
-    #             single50.transfer(transfer_vol, source.top(height), which_well_dest(tubes, i).top(-15), new_tip='never',
-    #                               blow_out=True)
-    #             single50.blow_out()
-    #             single50.blow_out()
-    #             single50.blow_out()
-    #             current_vol = current_vol - transfer_vol
-    #             print(transfer_vol, ' ul of plasma added to tube ', current_tube)
-    #             counter_single50 = counter_single50 + 1
-    #         else:
-    #             check_if_tip_replace(single1000, counter_single1000)
-    #             single1000.transfer(transfer_vol, source.top(height), which_well_dest(tubes, i).top(-15),
-    #                                 new_tip='never', blow_out=True)
-    #             single1000.blow_out()
-    #             single1000.blow_out()
-    #             single1000.blow_out()
-    #             current_vol = current_vol - transfer_vol
-    #             print(transfer_vol, ' ul of plasma added to tube ', current_tube)
-    #             counter_single1000 = counter_single1000 + 1
-    #     else:
-    #         if transfer_vol < 100:
-    #             check_if_tip_replace(single50, counter_single50)
-    #             single50.transfer(transfer_vol, source.bottom(3), which_well_dest(tubes, i).top(-15), new_tip='never',
-    #                               blow_out=True)
-    #             single50.blow_out()
-    #             single50.blow_out()
-    #             single50.blow_out()
-    #             current_vol = current_vol - transfer_vol
-    #             print(transfer_vol, ' ul of plasma added to tube ', current_tube)
-    #             counter_single50 = counter_single50 + 1
-    #
-    #         else:
-    #             check_if_tip_replace(single1000, counter_single1000)
-    #             single1000.transfer(transfer_vol, source.bottom(3), which_well_dest(tubes, i).top(-15), new_tip='never',
-    #                                 blow_out=True)
-    #             single1000.blow_out()
-    #             single1000.blow_out()
-    #             single1000.blow_out()
-    #             current_vol = current_vol - transfer_vol
-    #             print(transfer_vol, ' ul of plasma added to tube ', current_tube)
-    #             counter_single1000 = counter_single1000 + 1
-
     single50.drop_tip()
     single1000.drop_tip()
 
-
+# calculating of volume that should be transferred in each pipetting cycle
 def calc_transfer_vol(is_increase, final_vol, diff, iteration):
     if is_increase:
         return round(iteration * diff)
     else:
         return round(final_vol - iteration * diff)
 
-
+# checking if begin volume is enough for all dilutions
 def calc_min_begin_vol(tube_amount, diff):
     calculated_min = 0
     for i in range(tube_amount):
@@ -154,6 +106,7 @@ def calc_min_begin_vol(tube_amount, diff):
 # method for changing pipette tip for 5 pipetting cycles
 def check_if_tip_replace(pipette, counter_pipette):
     if counter_pipette % 5 == 0 and counter_pipette != 0:
+        print('pipette tips of ', pipette.name, 'changed')
         pipette.drop_tip()
         pipette.pick_up_tip()
 
@@ -170,7 +123,7 @@ def which_well_dest(tubes, iteration):
 
     return tubes[current_rack][iteration - (tubes_amount_in_rack * current_rack)]
 
-
+# the height of aspirating from falcon calculating
 def source_aspirating_height(current_vol, source):
     if current_vol >= 5000:
         height = 0.0018 * current_vol - 118
@@ -179,6 +132,7 @@ def source_aspirating_height(current_vol, source):
         return source.bottom(3)
 
 
+# which pipette should be used
 def which_pipette(transfer_vol, single50, single1000):
     if transfer_vol < 100:
         return single50
@@ -186,10 +140,16 @@ def which_pipette(transfer_vol, single50, single1000):
         return single1000
 
 
+# how much blow_outs is supposed to be performed
+def blow_outs(times, pipette):
+    for i in range(times):
+        pipette.blow_out()
+
+
 # ****************************************************************************************#
 
 # invoke method
 begin_vol1 = 40000
 final_vol1 = 600
-tube_amount1 = 10
+tube_amount1 = 100
 serial_dil(begin_vol1, final_vol1, tube_amount1)
