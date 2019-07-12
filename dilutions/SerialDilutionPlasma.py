@@ -1,4 +1,5 @@
 from opentrons import labware, instruments, robot
+import math
 
 
 def serial_dil(begin_vol, final_vol, tube_amount):
@@ -61,6 +62,10 @@ def serial_dil(begin_vol, final_vol, tube_amount):
     print(tube_amount, 'dilutions prepared.')
 
 
+last_rack = 0
+current_rack = 0
+
+
 # main method for dispening plasma
 def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1000, source, tubes, current_vol):
     single50.pick_up_tip()
@@ -68,32 +73,31 @@ def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1
 
     counter_pipette = 0
 
+    tubes_amount_in_rack = 35
+
+    global last_rack
+    last_rack = math.floor(tube_amount / tubes_amount_in_rack)
+
     for i in range(tube_amount):
-        current_tube = i + 1
-        transfer_vol = calc_transfer_vol(is_increase, final_vol, diff, i)
+        transfer_vol = round(final_vol - i * diff)
 
         used_pipette = which_pipette(transfer_vol, single50, single1000)
 
         check_if_tip_replace(used_pipette, counter_pipette)
         used_pipette.transfer(transfer_vol,
                               source_aspirating_height(current_vol, source),
-                              which_well_dest(tubes, i).top(-15), new_tip='never')
+                              destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(-15),
+                              new_tip='never')
 
         blow_outs(3, used_pipette)
 
         current_vol = current_vol - transfer_vol
-        print(transfer_vol, ' ul of plasma added to tube ', current_tube)
+        print(transfer_vol, ' ul of plasma added to tube ', i + 1)
         counter_pipette = counter_pipette + 1
 
     single50.drop_tip()
     single1000.drop_tip()
 
-# calculating of volume that should be transferred in each pipetting cycle
-def calc_transfer_vol(is_increase, final_vol, diff, iteration):
-    if is_increase:
-        return round(iteration * diff)
-    else:
-        return round(final_vol - iteration * diff)
 
 # checking if begin volume is enough for all dilutions
 def calc_min_begin_vol(tube_amount, diff):
@@ -108,20 +112,24 @@ def check_if_tip_replace(pipette, counter_pipette):
     if counter_pipette % 5 == 0 and counter_pipette != 0:
         print('pipette tips of ', pipette.name, 'changed')
         pipette.drop_tip()
+        pipette.drop_tip()
         pipette.pick_up_tip()
 
 
-current_rack = 0
-
-
 # destination place iterating
-def which_well_dest(tubes, iteration):
+def destination(is_increase, tubes, iteration, tubes_amount_in_rack, tube_amount):
     global current_rack
-    tubes_amount_in_rack = 35
-    if iteration % tubes_amount_in_rack == 0 and iteration != 0:
-        current_rack = current_rack + 1
+    global last_rack
+    # tubes_amount_in_rack = 35
+    if is_increase:
+        if iteration % tubes_amount_in_rack == 0 and iteration != 0:
+            current_rack = current_rack + 1
+        return tubes[current_rack][iteration - (tubes_amount_in_rack * current_rack)]
+    else:
+        if (tube_amount - iteration) % 35 == 0 and iteration != 0:
+            last_rack = last_rack - 1
+        return tubes[last_rack][tube_amount - last_rack * tubes_amount_in_rack - iteration-1]
 
-    return tubes[current_rack][iteration - (tubes_amount_in_rack * current_rack)]
 
 # the height of aspirating from falcon calculating
 def source_aspirating_height(current_vol, source):
@@ -150,6 +158,6 @@ def blow_outs(times, pipette):
 
 # invoke method
 begin_vol1 = 40000
-final_vol1 = 600
-tube_amount1 = 100
+final_vol1 = 648
+tube_amount1 = 105
 serial_dil(begin_vol1, final_vol1, tube_amount1)
