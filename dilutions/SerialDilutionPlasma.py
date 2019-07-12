@@ -29,8 +29,8 @@ def serial_dil(begin_vol, final_vol, tube_amount):
 
     single1000 = instruments.P1000_Single(mount='left',
                                           tip_racks=[tip_rack_big],
-                                          aspirate_flow_rate=100,
-                                          dispense_flow_rate=100)
+                                          aspirate_flow_rate=500,
+                                          dispense_flow_rate=1000)
     # difference value calculating
     current_vol = begin_vol
     diff = round(final_vol / (tube_amount - 1), 2)
@@ -111,7 +111,6 @@ def calc_min_begin_vol(tube_amount, diff):
 def check_if_tip_replace(pipette, counter_pipette):
     if counter_pipette % 5 == 0 and counter_pipette != 0:
         print('pipette tips of ', pipette.name, 'changed')
-        pipette.drop_tip()
         pipette.drop_tip()
         pipette.pick_up_tip()
 
