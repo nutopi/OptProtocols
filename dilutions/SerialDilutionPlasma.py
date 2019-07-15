@@ -1,6 +1,9 @@
 from opentrons import labware, instruments, robot
 import math
 
+counter_pipette50 = 0
+counter_pipette1000 = 0
+
 
 def serial_dil(begin_vol, final_vol, tube_amount):
     # creates custom labware if currently not created
@@ -24,13 +27,13 @@ def serial_dil(begin_vol, final_vol, tube_amount):
 
     single50 = instruments.P50_Single(mount='right',
                                       tip_racks=[tip_rack_small],
-                                      aspirate_flow_rate=100,
+                                      aspirate_flow_rate=50,
                                       dispense_flow_rate=100)
 
     single1000 = instruments.P1000_Single(mount='left',
                                           tip_racks=[tip_rack_big],
-                                          aspirate_flow_rate=500,
-                                          dispense_flow_rate=1000)
+                                          aspirate_flow_rate=1000,
+                                          dispense_flow_rate=1500)
     # difference value calculating
     current_vol = begin_vol
     diff = round(final_vol / (tube_amount - 1), 2)
@@ -44,8 +47,9 @@ def serial_dil(begin_vol, final_vol, tube_amount):
         robot.comment('Begin volume is too little. Pour more liquid into the falcon.')
         return
 
-    # dispensing plasma A from 0 ul to final volume
-    dispense_plasma(True, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A3'), tubes, current_vol)
+    # dispensing plasma A from final volume to 0 ul, tubes iterated from the first to the last one
+    dispense_plasma(True, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A3'), tubes, current_vol,
+                    tip_rack_small, tip_rack_big)
 
     current_vol = begin_vol
 
@@ -56,8 +60,9 @@ def serial_dil(begin_vol, final_vol, tube_amount):
     global current_rack
     current_rack = 0
 
-    # dispensing plasma B from final volume to 0 ul
-    dispense_plasma(False, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A4'), tubes, current_vol)
+    # dispensing plasma B from final volume to 0 ul, tubes iterated from the last one to the first
+    dispense_plasma(False, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A4'), tubes, current_vol,
+                    tip_rack_small, tip_rack_big)
 
     print(tube_amount, 'dilutions prepared.')
 
@@ -67,33 +72,28 @@ current_rack = 0
 
 
 # main method for dispening plasma
-def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1000, source, tubes, current_vol):
-    single50.pick_up_tip()
-    single1000.pick_up_tip()
-
-    counter_pipette = 0
+def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1000, source, tubes, current_vol,
+                    tip_rack_small, tip_rack_big):
+    single50.pick_up_tip(tip_rack_small[counter_pipette50], 3, 0)
+    single1000.pick_up_tip(tip_rack_big[counter_pipette1000], 3, 0)
 
     tubes_amount_in_rack = 35
 
     global last_rack
-    last_rack = math.floor(tube_amount / tubes_amount_in_rack)
+    last_rack = math.floor((tube_amount - 1) / tubes_amount_in_rack)
 
     for i in range(tube_amount):
         transfer_vol = round(final_vol - i * diff)
 
         used_pipette = which_pipette(transfer_vol, single50, single1000)
 
-        check_if_tip_replace(used_pipette, counter_pipette)
-        used_pipette.transfer(transfer_vol,
-                              source_aspirating_height(current_vol, source),
-                              destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(-15),
-                              new_tip='never')
+        transfer(used_pipette, transfer_vol, current_vol, source, is_increase,
+                 tubes, i, tubes_amount_in_rack, tube_amount)
 
-        blow_outs(3, used_pipette)
+        check_if_tip_replace(used_pipette, single50)
 
         current_vol = current_vol - transfer_vol
         print(transfer_vol, ' ul of plasma added to tube ', i + 1)
-        counter_pipette = counter_pipette + 1
 
     single50.drop_tip()
     single1000.drop_tip()
@@ -107,19 +107,46 @@ def calc_min_begin_vol(tube_amount, diff):
     return calculated_min
 
 
-# method for changing pipette tip for 5 pipetting cycles
-def check_if_tip_replace(pipette, counter_pipette):
+# method for tip iterating
+def which_pipette_tip_counter(used_pipette, single50):
+    if used_pipette == single50:
+        global counter_pipette50
+        counter_pipette50 = counter_pipette50 + 1
+        return counter_pipette50
+    else:
+        global counter_pipette1000
+        counter_pipette1000 = counter_pipette1000 + 1
+        return counter_pipette1000
+
+
+# method for transferring the liquid
+def transfer(used_pipette, transfer_vol, current_vol, source, is_increase, tubes,
+             i, tubes_amount_in_rack, tube_amount):
+    used_pipette.transfer(transfer_vol,
+                          source_aspirating_height(current_vol, source),
+                          destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(-15),
+                          blow_out=True,
+                          new_tip='never')
+
+    blow_outs(2, used_pipette)
+
+
+# method for changing pipette tip every 5 pipetting cycles
+def check_if_tip_replace(pipette, single50):
+    counter_pipette = which_pipette_tip_counter(pipette, single50)
+    tip_iterating = round(counter_pipette / 5)
     if counter_pipette % 5 == 0 and counter_pipette != 0:
         print('pipette tips of ', pipette.name, 'changed')
         pipette.drop_tip()
-        pipette.pick_up_tip()
+        rack = pipette.tip_racks[0]
+        pipette.pick_up_tip(rack[tip_iterating], 3, 0)
+        print('Picking up tip from ', pipette.tip_racks, 'counter pipette =', counter_pipette)
 
 
 # destination place iterating
 def destination(is_increase, tubes, iteration, tubes_amount_in_rack, tube_amount):
     global current_rack
     global last_rack
-    # tubes_amount_in_rack = 35
     if is_increase:
         if iteration % tubes_amount_in_rack == 0 and iteration != 0:
             current_rack = current_rack + 1
@@ -127,7 +154,7 @@ def destination(is_increase, tubes, iteration, tubes_amount_in_rack, tube_amount
     else:
         if (tube_amount - iteration) % 35 == 0 and iteration != 0:
             last_rack = last_rack - 1
-        return tubes[last_rack][tube_amount - last_rack * tubes_amount_in_rack - iteration-1]
+        return tubes[last_rack][tube_amount - last_rack * tubes_amount_in_rack - iteration - 1]
 
 
 # the height of aspirating from falcon calculating
@@ -160,3 +187,4 @@ begin_vol1 = 40000
 final_vol1 = 648
 tube_amount1 = 105
 serial_dil(begin_vol1, final_vol1, tube_amount1)
+# opentrons.simulate.simulate(SerialDilutionPlasma.py)
