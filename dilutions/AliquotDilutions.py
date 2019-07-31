@@ -39,24 +39,40 @@ def aliquot_dil():
                                           aspirate_flow_rate=1000,
                                           dispense_flow_rate=1500)
     global current_rack
+
     # TODO proper wells counting in source racks
-    single1000.pick_up_tip(tip_rack_big, 3, 0)
     for i in range(105):
+        single1000.pick_up_tip()
         transfer(True, single1000, 200, i, source_tubes, dest_tubes_reverse, dest_tubes_normal)
         transfer(False, single1000, 200, i, source_tubes, dest_tubes_reverse, dest_tubes_normal)
+        single1000.drop_tip()
+
+
+def transfer(is_increase, pipette, transfer_vol, iteration, source_tubes, dest_tubes_reverse, dest_tubes_normal):
+    source_tube = which_source_tube(iteration, source_tubes)
+    pipette.mix(8, 200, source_tube)
+
+    destination_tube = which_destination_tube(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration).top(-20)
+    pipette.transfer(transfer_vol,
+                     source_tube,
+                     destination_tube,
+                     new_tip='never', blow_out=True)
+    blow_outs(2, pipette)
 
 
 # source tubes iterating
-def source(iteration, source_tubes):
+def which_source_tube(iteration, source_tubes):
     global current_rack
     if iteration % 35 == 0 and iteration != 0:
         current_rack = current_rack + 1
-    print('\nSOURCE:', source_tubes[current_rack][iteration - (35 * current_rack)], '\tsource rack:', current_rack)
+    print('Obecny rack: ', current_rack)
+    current_tube = source_tubes[current_rack][iteration - (35 * current_rack)]
+    print('\nSOURCE:', current_tube, '\tsource rack:', current_rack)
     return source_tubes[current_rack][iteration - (35 * current_rack)]
 
 
 # destination place iterating
-def destination(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration):
+def which_destination_tube(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration):
     global first_rack
     global last_rack
     if is_increase:
@@ -70,25 +86,6 @@ def destination(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration):
         print('DEST REVERSE:', dest_tubes_reverse[last_rack][105 - last_rack * 35 - iteration - 1], '\tdest rack:',
               last_rack, '\n***')
         return dest_tubes_reverse[last_rack][105 - last_rack * 35 - iteration - 1]
-
-
-def transfer(is_increase, pipette, transfer_vol, iteration, source_tubes, dest_tubes_reverse, dest_tubes_normal):
-    if is_increase:
-        mix_repetitions = 8
-        pipette.transfer(transfer_vol, source(iteration, source_tubes),
-                         destination(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration).top(-20),
-                         new_tip='never', blow_out=True,
-                         mix_before=(mix_repetitions, 200))
-    else:
-        pipette.transfer(transfer_vol, source(iteration, source_tubes),
-                         destination(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration).top(-20),
-                         new_tip='never', blow_out=True)
-    #     mix_repetitions = 0
-    # pipette.transfer(transfer_vol, source(iteration, source_tubes),
-    #                  destination(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration).top(-20),
-    #                  new_tip='never', blow_out=True,
-    #                  mix_before=(mix_repetitions, 200))
-    blow_outs(2, pipette)
 
 
 def blow_outs(times, pipette):
