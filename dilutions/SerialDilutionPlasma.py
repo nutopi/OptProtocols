@@ -27,21 +27,16 @@ def serial_dil(begin_vol, final_vol, tube_amount):
 
     single50 = instruments.P50_Single(mount='right',
                                       tip_racks=[tip_rack_small],
-                                      aspirate_flow_rate=50,
-                                      dispense_flow_rate=100)
+                                      aspirate_flow_rate=100,
+                                      dispense_flow_rate=150)
 
     single1000 = instruments.P1000_Single(mount='left',
                                           tip_racks=[tip_rack_big],
-                                          aspirate_flow_rate=1000,
-                                          dispense_flow_rate=1500)
+                                          aspirate_flow_rate=1500,
+                                          dispense_flow_rate=2000)
     # difference value calculating
     current_vol = begin_vol
     diff = round(final_vol / (tube_amount - 1), 2)
-
-    # text = 'Amount of needed tubes is {needed_tube}'.format(
-    #     needed_tube=needed_tube
-    # )
-    # robot.comment(text)
 
     if begin_vol < calc_min_begin_vol(tube_amount, diff):
         robot.comment('Begin volume is too little. Pour more liquid into the falcon.')
@@ -74,8 +69,8 @@ current_rack = 0
 # main method for dispening plasma
 def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1000, source, tubes, current_vol,
                     tip_rack_small, tip_rack_big):
-    single50.pick_up_tip(tip_rack_small[counter_pipette50], 3, 0)
-    single1000.pick_up_tip(tip_rack_big[counter_pipette1000], 3, 0)
+    single50.pick_up_tip()
+    single1000.pick_up_tip()
 
     tubes_amount_in_rack = 35
 
@@ -122,11 +117,30 @@ def which_pipette_tip_counter(used_pipette, single50):
 # method for transferring the liquid
 def transfer(used_pipette, transfer_vol, current_vol, source, is_increase, tubes,
              i, tubes_amount_in_rack, tube_amount):
-    used_pipette.transfer(transfer_vol,
-                          source_aspirating_height(current_vol, source),
-                          destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(-15),
-                          blow_out=True,
-                          new_tip='never')
+    # using touch tip instance for small volumes
+    if (transfer_vol < 100) and (transfer_vol > 50):
+        for j in range(2):
+            used_pipette.aspirate(transfer_vol / 2, source_aspirating_height(current_vol, source))
+            used_pipette.dispense(used_pipette.current_volume,
+                                  destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(
+                                      -15)).blow_out().touch_tip(radius=0.7, v_offset=-10)
+
+    elif (transfer_vol < 50) and (transfer_vol > 0):
+        used_pipette.aspirate(transfer_vol, source_aspirating_height(current_vol, source))
+        used_pipette.dispense(used_pipette.current_volume,
+                              destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(
+                                  -15)).blow_out().touch_tip(radius=0.7, v_offset=-10)
+
+    else:
+        used_pipette.aspirate(transfer_vol, source_aspirating_height(current_vol, source))
+        used_pipette.dispense(used_pipette.current_volume,
+                              destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(
+                                  -15)).blow_out()
+    # used_pipette.transfer(transfer_vol,
+    #                       source_aspirating_height(current_vol, source),
+    #                       destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(-15),
+    #                       blow_out=True,
+    #                       new_tip='never')
 
     blow_outs(2, used_pipette)
 
@@ -134,12 +148,11 @@ def transfer(used_pipette, transfer_vol, current_vol, source, is_increase, tubes
 # method for changing pipette tip every 5 pipetting cycles
 def check_if_tip_replace(pipette, single50):
     counter_pipette = which_pipette_tip_counter(pipette, single50)
-    tip_iterating = round(counter_pipette / 5)
     if counter_pipette % 5 == 0 and counter_pipette != 0:
         print('pipette tips of ', pipette.name, 'changed')
         pipette.drop_tip()
-        rack = pipette.tip_racks[0]
-        pipette.pick_up_tip(rack[tip_iterating], 3, 0)
+        pipette.pick_up_tip()
+        print('current tip', pipette.current_tip(), ' from pipette ', pipette)
         print('Picking up tip from ', pipette.tip_racks, 'counter pipette =', counter_pipette)
 
 
@@ -187,4 +200,3 @@ begin_vol1 = 40000
 final_vol1 = 648
 tube_amount1 = 105
 serial_dil(begin_vol1, final_vol1, tube_amount1)
-# opentrons.simulate.simulate(SerialDilutionPlasma.py)
