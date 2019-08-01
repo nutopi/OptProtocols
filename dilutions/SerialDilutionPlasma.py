@@ -43,8 +43,7 @@ def serial_dil(begin_vol, final_vol, tube_amount):
         return
 
     # dispensing plasma A from final volume to 0 ul, tubes iterated from the first to the last one
-    dispense_plasma(True, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A3'), tubes, current_vol,
-                    tip_rack_small, tip_rack_big)
+    dispense_plasma(True, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A3'), tubes, current_vol)
 
     current_vol = begin_vol
 
@@ -56,8 +55,7 @@ def serial_dil(begin_vol, final_vol, tube_amount):
     current_rack = 0
 
     # dispensing plasma B from final volume to 0 ul, tubes iterated from the last one to the first
-    dispense_plasma(False, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A4'), tubes, current_vol,
-                    tip_rack_small, tip_rack_big)
+    dispense_plasma(False, tube_amount, diff, final_vol, single50, single1000, plasma_falcon('A4'), tubes, current_vol)
 
     print(tube_amount, 'dilutions prepared.')
 
@@ -67,8 +65,7 @@ current_rack = 0
 
 
 # main method for dispening plasma
-def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1000, source, tubes, current_vol,
-                    tip_rack_small, tip_rack_big):
+def dispense_plasma(is_increase, tube_amount, diff, final_vol, single50, single1000, source, tubes, current_vol):
     single50.pick_up_tip()
     single1000.pick_up_tip()
 
