@@ -27,13 +27,13 @@ def serial_dil(begin_vol, final_vol, tube_amount):
 
     single50 = instruments.P50_Single(mount='right',
                                       tip_racks=[tip_rack_small],
-                                      aspirate_flow_rate=100,
-                                      dispense_flow_rate=150)
+                                      aspirate_flow_rate=50,
+                                      dispense_flow_rate=100)
 
     single1000 = instruments.P1000_Single(mount='left',
                                           tip_racks=[tip_rack_big],
-                                          aspirate_flow_rate=1500,
-                                          dispense_flow_rate=2000)
+                                          aspirate_flow_rate=1000,
+                                          dispense_flow_rate=1500)
     # difference value calculating
     current_vol = begin_vol
     diff = round(final_vol / (tube_amount - 1), 2)
@@ -136,11 +136,6 @@ def transfer(used_pipette, transfer_vol, current_vol, source, is_increase, tubes
         used_pipette.dispense(used_pipette.current_volume,
                               destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(
                                   -15)).blow_out()
-    # used_pipette.transfer(transfer_vol,
-    #                       source_aspirating_height(current_vol, source),
-    #                       destination(is_increase, tubes, i, tubes_amount_in_rack, tube_amount).top(-15),
-    #                       blow_out=True,
-    #                       new_tip='never')
 
     blow_outs(2, used_pipette)
 
