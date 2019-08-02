@@ -7,28 +7,28 @@ last_rack = 2
 
 def aliquot_dil():
     # creates custom labware if currently not created
-    tube_2ml_rack_35 = "tube_2ml_rack_35"
-    if tube_2ml_rack_35 not in labware.list():
-        tube_2ml_rack_35 = labware.create("tube_2ml_rack_35",
+    tube_rack_35 = "tube_rack_35"
+    if tube_rack_35 not in labware.list():
+        tube_rack_35 = labware.create("tube_rack_35",
                                           grid=(7, 5),
                                           spacing=(16.25, 14.56),
                                           diameter=10,
                                           depth=41)
 
     # labware placement
-    source_tubes_a = labware.load('tube_2ml_rack_35', slot='1')
-    source_tubes_b = labware.load('tube_2ml_rack_35', slot='2')
-    source_tubes_c = labware.load('tube_2ml_rack_35', slot='3')
+    source_tubes_a = labware.load('tube_rack_35', slot='1')
+    source_tubes_b = labware.load('tube_rack_35', slot='2')
+    source_tubes_c = labware.load('tube_rack_35', slot='3')
     source_tubes_array = [source_tubes_a, source_tubes_b, source_tubes_c]
 
-    dest_tubes_reverse_a = labware.load('tube_2ml_rack_35', slot='4')
-    dest_tubes_reverse_b = labware.load('tube_2ml_rack_35', slot='5')
-    dest_tubes_reverse_c = labware.load('tube_2ml_rack_35', slot='6')
+    dest_tubes_reverse_a = labware.load('tube_rack_35', slot='4')
+    dest_tubes_reverse_b = labware.load('tube_rack_35', slot='5')
+    dest_tubes_reverse_c = labware.load('tube_rack_35', slot='6')
     dest_tubes_reverse = [dest_tubes_reverse_a, dest_tubes_reverse_b, dest_tubes_reverse_c]
 
-    dest_tubes_normal_a = labware.load('tube_2ml_rack_35', slot='7')
-    dest_tubes_normal_b = labware.load('tube_2ml_rack_35', slot='8')
-    dest_tubes_normal_c = labware.load('tube_2ml_rack_35', slot='9')
+    dest_tubes_normal_a = labware.load('tube_rack_35', slot='7')
+    dest_tubes_normal_b = labware.load('tube_rack_35', slot='8')
+    dest_tubes_normal_c = labware.load('tube_rack_35', slot='9')
     dest_tubes_normal = [dest_tubes_normal_a, dest_tubes_normal_b, dest_tubes_normal_c]
 
     tip_rack_big_a = labware.load('tiprack-1000ul', slot='10')
