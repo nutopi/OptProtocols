@@ -13,13 +13,13 @@ def aliquot_dil():
                                           grid=(7, 5),
                                           spacing=(16.25, 14.56),
                                           diameter=10,
-                                          depth=30)
+                                          depth=41)
 
     # labware placement
     source_tubes_a = labware.load('tube_2ml_rack_35', slot='1')
     source_tubes_b = labware.load('tube_2ml_rack_35', slot='2')
     source_tubes_c = labware.load('tube_2ml_rack_35', slot='3')
-    source_tubes = [source_tubes_a, source_tubes_b, source_tubes_c]
+    source_tubes_array = [source_tubes_a, source_tubes_b, source_tubes_c]
 
     dest_tubes_reverse_a = labware.load('tube_2ml_rack_35', slot='4')
     dest_tubes_reverse_b = labware.load('tube_2ml_rack_35', slot='5')
@@ -45,21 +45,22 @@ def aliquot_dil():
     for i in range(105):
         single1000.pick_up_tip()
 
-        source_tube = which_source_tube(i, source_tubes)
-        single1000.mix(8, 200, source_tube)
+        source_tube = which_source_tube(i, source_tubes_array)
+        single1000.mix(8, 250, source_tube, 4.0)
 
-        transfer(True, single1000, 200, i, source_tubes, dest_tubes_reverse, dest_tubes_normal)
-        transfer(False, single1000, 200, i, source_tubes, dest_tubes_reverse, dest_tubes_normal)
+        destination_tube = which_destination_tube(True, dest_tubes_reverse, dest_tubes_normal, i).top(-20)
+        transfer(single1000, 200, source_tube, destination_tube)
+
+        destination_tube = which_destination_tube(False, dest_tubes_reverse, dest_tubes_normal, i).top(-38)
+        transfer(single1000, 200, source_tube, destination_tube)
 
         single1000.drop_tip()
 
 
-def transfer(is_increase, pipette, transfer_vol, iteration, source_tube, dest_tubes_reverse, dest_tubes_normal):
-    destination_tube = which_destination_tube(is_increase, dest_tubes_reverse, dest_tubes_normal, iteration).top(-20)
-
+def transfer(pipette, transfer_vol, source_tube, dest_tube):
     pipette.transfer(transfer_vol,
                      source_tube,
-                     destination_tube,
+                     dest_tube,
                      new_tip='never', blow_out=True)
     blow_outs(2, pipette)
 
