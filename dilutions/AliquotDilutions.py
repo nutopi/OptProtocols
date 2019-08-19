@@ -5,15 +5,15 @@ first_rack = 0
 last_rack = 2
 
 
-def aliquot_dil():
+def aliquot_dil(transfer_vol):
     # creates custom labware if currently not created
     tube_rack_35 = "tube_rack_35"
     if tube_rack_35 not in labware.list():
         tube_rack_35 = labware.create("tube_rack_35",
-                                          grid=(7, 5),
-                                          spacing=(16.25, 14.56),
-                                          diameter=10,
-                                          depth=41)
+                                      grid=(7, 5),
+                                      spacing=(16.25, 14.56),
+                                      diameter=10,
+                                      depth=41)
 
     # labware placement
     source_tubes_a = labware.load('tube_rack_35', slot='1')
@@ -49,10 +49,10 @@ def aliquot_dil():
         single1000.mix(8, 250, source_tube, 4.0)
 
         destination_tube = which_destination_tube(True, dest_tubes_reverse, dest_tubes_normal, i).top(-20)
-        transfer(single1000, 200, source_tube, destination_tube)
+        transfer(single1000, transfer_vol, source_tube, destination_tube)
 
         destination_tube = which_destination_tube(False, dest_tubes_reverse, dest_tubes_normal, i).top(-38)
-        transfer(single1000, 200, source_tube, destination_tube)
+        transfer(single1000, transfer_vol, source_tube, destination_tube)
 
         single1000.drop_tip()
 
@@ -100,4 +100,5 @@ def blow_outs(times, pipette):
 
 # ********************************************************************************* #
 # invoke method
-aliquot_dil()
+transfer_vol_a = 200
+aliquot_dil(transfer_vol_a)
