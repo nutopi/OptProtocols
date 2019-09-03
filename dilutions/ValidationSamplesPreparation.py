@@ -1,4 +1,5 @@
 from opentrons import labware, instruments, robot
+import math, sys
 
 # creates custom labware if currently not created
 tube_rack_35 = "tube_rack_35"
@@ -32,7 +33,7 @@ single1000 = instruments.P1000_Single(mount='left',
                                       tip_racks=[tip_rack_big_A, tip_rack_big_B, tip_rack_big_C],
                                       aspirate_flow_rate=1000,
                                       dispense_flow_rate=1500)
-# Global variables
+# global variables
 h2o_source_current_vol = 0
 
 
@@ -40,7 +41,7 @@ h2o_source_current_vol = 0
 def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_vol, dp_conc, dp_spiked_conc, dilB_conc,
                    ss1_vol, ss2_vol, ss3_vol, ss24_vol, ss3_conc, ss24_conc,
                    ss_tubes_vol):
-    # Stock Sample no. 1 preparation - 16 times diluted Donor Plasma with water
+    # ******** Stock Sample no. 1 preparation - 16 times diluted Donor Plasma with water ******* #
     dp_vol_for_ss1 = round(ss1_vol / 16)
     print("Donor Plasma volume that will be transferred for SS#1: ", dp_vol_for_ss1)
     h2o_vol_for_ss1 = ss1_vol - dp_vol_for_ss1
@@ -61,14 +62,14 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
                                              temp_falcons_rack('A1'))
     print('Stock Sample no. 1 in temporary falcon prepared.\n')
 
-    # Stock Sample no. 2 preparation - raw Donor Plasma
+    # ******* Stock Sample no. 2 preparation - raw Donor Plasma ******* #
     used_pipette = which_pipette(ss2_vol, single50, single1000)
     dp_source_current_vol = liquid_transfer(used_pipette, ss2_vol, dp_source_current_vol, source_falcons_rack('A3'),
-                                            temp_falcons_rack('A2'))
+                                            temp_falcons_rack('B1'))
     print('\n', ss2_vol, '[ul] of Raw Donor Plasma was transferred. '
                          'Stock Sample no. 2 in temporary falcon prepared.')
 
-    # Stock Sample no. 3 preparation - Donor Plasma + Donor Plasma spiked OR Donor Plasma + water
+    # ******* Stock Sample no. 3 preparation - Donor Plasma + Donor Plasma spiked OR Donor Plasma + water ******* #
     if dp_conc >= ss3_conc:
         print('\nDonor Plasma concentration is greater than desired '
               'concentration of dilution in Stock Sample no. 3. '
@@ -80,13 +81,13 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
         used_pipette = which_pipette(dp_vol_for_ss3, single50, single1000)
         dp_source_current_vol = liquid_transfer(used_pipette, dp_vol_for_ss3, dp_source_current_vol,
                                                 source_falcons_rack('A3'),
-                                                temp_falcons_rack('B1'))
+                                                temp_falcons_rack('C1'))
         print('Donor Plasma was transferred for Stock Sample no. 3 falcon.')
 
         used_pipette = which_pipette(h2o_vol_for_ss3, single50, single1000)
         h2o_source_current_vol = liquid_transfer(used_pipette, h2o_vol_for_ss3, h2o_source_current_vol,
                                                  source_falcons_rack('A1'),
-                                                 temp_falcons_rack('B1'))
+                                                 temp_falcons_rack('C1'))
         print('Water was transferred for Stock Sample no. 3 falcon.'
               'Stock Sample no. 3 is prepared.')
     else:
@@ -101,100 +102,94 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
         used_pipette = which_pipette(dp_vol_for_ss3, single50, single1000)
         dp_source_current_vol = liquid_transfer(used_pipette, dp_vol_for_ss3, dp_source_current_vol,
                                                 source_falcons_rack('A3'),
-                                                temp_falcons_rack('B1'))
+                                                temp_falcons_rack('C1'))
         print('Donor Plasma was transferred for Stock Sample no. 3 falcon.')
 
         dp_spiked_source_current_vol = dp_spiked_begin_vol
         used_pipette = which_pipette(dp_spiked_vol_for_ss3, single50, single1000)
         dp_spiked_source_current_vol = liquid_transfer(used_pipette, dp_spiked_vol_for_ss3,
                                                        dp_spiked_source_current_vol, source_falcons_rack('A1'),
-                                                       temp_falcons_rack('B1'))
+                                                       temp_falcons_rack('C1'))
         print('Spiked Donor Plasma was transferred for Stock Sample no. 3 falcon.'
               'Stock Sample no. 3 is prepared.')
 
-    # Stock Sample no. 24 preparation - Donor Plasma + Donor Plasma spiked
+    # ******* Stock Sample no. 24 preparation - Donor Plasma + Donor Plasma spiked ******* #
     dp_vol_for_ss24 = round(((dp_spiked_conc - ss24_conc) / (dp_spiked_conc - dp_conc)) * ss24_vol)
     dp_spiked_vol_for_ss24 = ss24_vol - dp_vol_for_ss24
 
     used_pipette = which_pipette(dp_vol_for_ss24, single50, single1000)
     dp_source_current_vol = liquid_transfer(used_pipette, dp_vol_for_ss24, dp_source_current_vol,
                                             source_falcons_rack('A3'),
-                                            temp_falcons_rack('B2'))
-    print('\nDonor Plasma was transferred to temporary Stock Sample no. 24 falcon.')
+                                            temp_falcons_rack('A2'))
+    print('\n', dp_vol_for_ss24, ' ul of Donor Plasma was transferred to temporary Stock Sample no. 24 falcon.')
 
     used_pipette = which_pipette(dp_spiked_vol_for_ss24, single50, single1000)
     dp_spiked_source_current_vol = liquid_transfer(used_pipette, dp_spiked_vol_for_ss24, dp_spiked_source_current_vol,
                                                    source_falcons_rack('A1'),
-                                                   temp_falcons_rack('B2'))
-    print('Spiked Donor Plasma was transferred to temporary Stock Sample no. 24 falcon.')
+                                                   temp_falcons_rack('A2'))
+    print(dp_spiked_vol_for_ss24,
+          'ul of Spiked Donor Plasma was transferred to temporary Stock Sample no. 24 falcon. The SS#24 prepared.\n')
 
-    # Stock Samples no. 4 - 8 preparation in 1.5 ml tubes
-    # Donor Plasma transferring
+    # ******* Stock Samples no. 4 - 8 preparation in 1.5 ml tubes ******* #
     j = 0
+    dilB_source_current_vol = dilB_begin_vol
     for i in range(70, 20, -10):
         dp_vol_for_tubes = round(((dilB_conc - i) / (dilB_conc - dp_conc)) * ss_tubes_vol)
-
         used_pipette = which_pipette(dp_vol_for_tubes, single50, single1000)
         dp_source_current_vol = liquid_transfer(used_pipette, dp_vol_for_tubes, dp_source_current_vol,
                                                 source_falcons_rack('A3'),
                                                 ss_tubes_rack(j))
-        j = j + 1
-    print('\nStock Samples no. 4 - 8 preparation in progress. Donor Plasma to these tubes added.')
-
-    # Dilution B transferring
-    j = 0
-    dilB_source_current_vol = dilB_begin_vol
-    for i in range(30, 80, 10):
+        print(dp_vol_for_tubes, ' ul of Donor Plasma to', j, 'ss tube added.')
         dilB_vol_for_tubes = round(((i - dp_conc) / (dilB_conc - dp_conc)) * ss_tubes_vol)
-
         used_pipette = which_pipette(dilB_vol_for_tubes, single50, single1000)
         dilB_source_current_vol = liquid_transfer(used_pipette, dilB_vol_for_tubes, dilB_source_current_vol,
                                                   source_falcons_rack('A2'),
                                                   ss_tubes_rack(j))
+        print(dilB_vol_for_tubes, ' ul of Dilution B to', j, 'ss tube added.')
         j = j + 1
-    print('Dilution B to the Stock Samples no. 4 - 8 added. 8th tube has no.:', j, ' Their preparation finished.\n')
+    print('The Stock Samples no. 4 - 8 preparation finished.\n')
 
-    # Stock Samples no. 9 - 23 preparation in 1.5 ml tubes
+    # ******* Stock Samples no. 9 - 23 preparation in 1.5 ml tubes ******* #
 
     # Stock Sample no. 9 - 100% spiked Donor Plasma
-    j = j + 1
     used_pipette = which_pipette(ss_tubes_vol, single50, single1000)
     dp_spiked_source_current_vol = liquid_transfer(used_pipette, ss_tubes_vol, dp_spiked_source_current_vol,
                                                    source_falcons_rack('A1'),
                                                    ss_tubes_rack(j))
-    print('Stock Sample no. 9 (spiked Donor Plasma) prepared. Its number is:', j, '\n')
+    print(ss_tubes_vol, ' ul of spiked Donor Plasma transferred to ss tube number ', j,
+          'Stock Sample no. 9 () prepared.\n')
 
-    conc_step = round((dilB_conc - dp_conc) / 14)
+    # Stock Samples no. 10 - 22 (Raw Donor Plasma + Donor Plasma Spiked)
+    conc_step = round(((dp_spiked_conc - dp_conc) / 14), 3)
     j = j + 1
-    k = j
-    # Donor Plasma spiked transferring
     for i in range(13):
-        desired_conc = dp_spiked_conc - i * conc_step
+        desired_conc = round((dp_spiked_conc - (i + 1) * conc_step), 1)
+        print('\ndesired concentration:', desired_conc)
+
         dp_spiked_vol_for_tubes = round(((desired_conc - dp_conc) / (dp_spiked_conc - dp_conc)) * ss_tubes_vol)
         used_pipette = which_pipette(dp_spiked_vol_for_tubes, single50, single1000)
         dp_spiked_source_current_vol = liquid_transfer(used_pipette, dp_spiked_vol_for_tubes,
                                                        dp_spiked_source_current_vol, source_falcons_rack('A1'),
                                                        ss_tubes_rack(j))
-        j = j + 1
+        print(dp_spiked_vol_for_tubes, ' ul of spiked Donor Plasma to', j, 'ss tube added.')
 
-    # Raw Donor Plasma transferring
-    for i in range(13):
-        desired_conc = dp_spiked_conc - i * conc_step
         dp_vol_for_tubes = round(((dp_spiked_conc - desired_conc) / (dp_spiked_conc - dp_conc)) * ss_tubes_vol)
         used_pipette = which_pipette(dp_vol_for_tubes, single50, single1000)
         dp_source_current_vol = liquid_transfer(used_pipette, dp_vol_for_tubes, dp_source_current_vol,
-                                                source_falcons_rack('A1'),
-                                                ss_tubes_rack(k))
-        k = k + 1
-    print('Serial dilutions for Stock Samples no. 10 - 22 from raw Donor Plasma and spiked Donor Plasma prepared.')
+                                                source_falcons_rack('A3'),
+                                                ss_tubes_rack(j))
+        print(dp_vol_for_tubes, ' ul of Donor Plasma to', j, 'ss tube added.')
 
-    # Stock Sample no. 23 - 100% Donor Plasma
-    k = k + 1
+        j = j + 1
+
+    print('Serial dilutions for Stock Samples no. 10 - 22 from raw Donor Plasma and spiked Donor Plasma prepared.\n')
+
+    # Stock Sample no. 23 - 100% Raw Donor Plasma
     used_pipette = which_pipette(ss_tubes_vol, single50, single1000)
     dp_source_current_vol = liquid_transfer(used_pipette, ss_tubes_vol, dp_source_current_vol,
-                                            source_falcons_rack('A3'), ss_tubes_rack(k))
-    print('SS#23 is tube no.:', k)
-    print('Stock Sample no. 23 (pure Raw Donor Plasma) prepared.\n')
+                                            source_falcons_rack('A3'), ss_tubes_rack(j + 1))
+    print(ss_tubes_vol, ' ul of Donor Plasma transferred to ss tube number ', j + 1,
+          'Stock Sample no. 23 () prepared.\n')
 
 
 # ********         VORTEX PAUSE START        ************ #
@@ -207,42 +202,41 @@ cobas_tube_no = 0
 
 # method for transferring from temporary tubes and falcons into the Cobas tubes
 def transfer_to_turb_tubes():
-    print('TRANSFER TO TURB TUBES METHOD STARTED')
+    print('\nTRANSFER TO TURB TUBES METHOD STARTED')
     cobas_tubes_vol = 100
 
-    # transferring Stock Samples no. 1, no. 2, no. 3 and no. 24
-    # TODO poprawic ss1 -> cobas 01
+    # transferring Stock Samples no. 1, no. 2 and no. 3
     global cobas_tube_no
-    for cobas_tube_no in range(5):
-        if cobas_tube_no == 2:
-            print('cobas_tube_no: ', cobas_tube_no)
-        elif cobas_tube_no == 4:
-            single1000.pick_up_tip()
-            single1000.aspirate(cobas_tubes_vol, temp_falcons_rack(cobas_tube_no).top(-40))
-            single1000.dispense(single1000.current_volume, cobas_tuberack(23))
-            blow_outs(2, single1000)
-            single1000.drop_tip()
-            print('cobas_tube_no: ', cobas_tube_no)
-        else:
-            single1000.pick_up_tip()
-            single1000.aspirate(cobas_tubes_vol, temp_falcons_rack(cobas_tube_no).top(-40))
-            single1000.dispense(single1000.current_volume, cobas_tuberack(cobas_tube_no))
-            blow_outs(2, single1000)
-            single1000.drop_tip()
-            print('cobas_tube_no: ', cobas_tube_no)
+    for cobas_tube_no in range(3):
+        single1000.pick_up_tip()
+        single1000.aspirate(cobas_tubes_vol, temp_falcons_rack(cobas_tube_no).bottom(10))
+        single1000.dispense(single1000.current_volume, cobas_tuberack(cobas_tube_no))
+        blow_outs(2, single1000)
+        single1000.drop_tip()
+        print('cobas_tube_no: ', cobas_tube_no)
+    print('Stock Samples 1 - 3 transferred to cobas tubes.\n')
 
     # transferring Stock Samples no. 4 - 23
     i = 0
-    print('Kobas: ', cobas_tube_no)
+    cobas_tube_no = cobas_tube_no + 1
     # global cobas_tube_no
-    for cobas_tube_no in range(cobas_tube_no, 24):
+    for cobas_tube_no in range(cobas_tube_no, 23):
         single1000.pick_up_tip()
-        single1000.aspirate(cobas_tubes_vol, ss_tubes_rack(i).top(-25))
+        single1000.aspirate(cobas_tubes_vol, ss_tubes_rack(i))
         single1000.dispense(single1000.current_volume, cobas_tuberack(cobas_tube_no))
         blow_outs(2, single1000)
         single1000.drop_tip()
         i = i + 1
         print('cobas_tube_no: ', cobas_tube_no)
+    print('Stock Samples 4 - 23 transferred to cobas tubes.\n')
+
+    cobas_tube_no = cobas_tube_no + 1
+    single1000.pick_up_tip()
+    single1000.aspirate(cobas_tubes_vol, temp_falcons_rack('A2').bottom(10))
+    single1000.dispense(single1000.current_volume, cobas_tuberack(cobas_tube_no))
+    blow_outs(2, single1000)
+    single1000.drop_tip()
+    print('Stock Sample 24 transferred to cobas tube number:', cobas_tube_no, '\n\n')
 
 
 # ********         TURB TESTS PAUSE START       ************ #
@@ -251,7 +245,7 @@ def transfer_to_turb_tubes():
 
 # method for validation sample preparation
 # global current_rack
-current_rack = 0
+dest_current_rack = 0
 
 global current_tube
 current_tube = 0
@@ -260,6 +254,7 @@ current_tube = 0
 def validation_samples_preparation(validation_sample_vol, ss1_vol, ss2_vol, ss3_vol, ss24_vol):
     used_pipette = which_pipette(validation_sample_vol, single50, single1000)
     global h2o_source_current_vol
+    global current_tube
 
     # transferring water to Validation Samples no. 1 - 10
     for current_tube in range(10):
@@ -267,48 +262,56 @@ def validation_samples_preparation(validation_sample_vol, ss1_vol, ss2_vol, ss3_
         h2o_source_current_vol = liquid_transfer(used_pipette, validation_sample_vol, h2o_source_current_vol,
                                                  source_falcons_rack('B1'),
                                                  destination_tube)
+        print('Water transferred into tube ', destination_tube, 'VS#', current_tube)
 
     # transferring dilution from Stock Sample no. 1 to Validation Samples no. 11 - 20
+    # global current_tube
     ss1_current_vol = ss1_vol
-    for current_tube in range(20):
+    for current_tube in range(current_tube + 1, 20):
         destination_tube = dest_validation_tube(validation_tuberacks_array, current_tube)
         ss1_current_vol = liquid_transfer(used_pipette, validation_sample_vol, ss1_current_vol, temp_falcons_rack('A1'),
                                           destination_tube)
+        print('Dilutions from SS#1 transferred into tube ', destination_tube, 'VS#', current_tube)
 
     # transferring dilution from Stock Sample no. 2 to Validation Samples no. 21 - 30
     ss2_current_vol = ss2_vol
-    for current_tube in range(30):
+    for current_tube in range(current_tube + 1, 30):
         destination_tube = dest_validation_tube(validation_tuberacks_array, current_tube)
-        ss2_current_vol = liquid_transfer(used_pipette, validation_sample_vol, ss2_current_vol, temp_falcons_rack('A2'),
+        ss2_current_vol = liquid_transfer(used_pipette, validation_sample_vol, ss2_current_vol, temp_falcons_rack('B1'),
                                           destination_tube)
+        print('Dilutions from SS#2 transferred into tube ', destination_tube, 'VS#', current_tube)
 
     # transferring dilution from Stock Sample no. 3 to Validation Samples no. 31 - 45
     ss3_current_vol = ss3_vol
-    for current_tube in range(45):
+    for current_tube in range(current_tube + 1, 45):
         destination_tube = dest_validation_tube(validation_tuberacks_array, current_tube)
-        ss3_current_vol = liquid_transfer(used_pipette, validation_sample_vol, ss3_current_vol, temp_falcons_rack('B1'),
+        ss3_current_vol = liquid_transfer(used_pipette, validation_sample_vol, ss3_current_vol, temp_falcons_rack('C1'),
                                           destination_tube)
+        print('Dilutions from SS#3 transferred into tube ', destination_tube, 'VS#', current_tube)
 
     # transferring dilution from Stock Samples no. 4 - 23 to Validation Samples no. 46 - 65
     i = 0
-    for current_tube in range(65):
+    for current_tube in range(current_tube + 1, 65):
         destination_tube = dest_validation_tube(validation_tuberacks_array, current_tube)
         used_pipette.pick_up_tip()
-        used_pipette.aspirate(validation_sample_vol, ss_tubes_rack(i).top(-25))
+        used_pipette.aspirate(validation_sample_vol, ss_tubes_rack(i))
         used_pipette.dispense(used_pipette.current_volume, destination_tube)
         blow_outs(2, used_pipette)
         used_pipette.drop_tip()
+        print('Dilutions from ', ss_tubes_rack(i), ' transferred into tube ', destination_tube, 'VS#', current_tube)
         i = i + 1
 
     # transferring dilution from Stock Sample no. 24 to Validation Samples no. 66 - 80
     ss24_current_vol = ss24_vol
-    for current_tube in range(80):
+    for current_tube in range(current_tube + 1, 80):
         destination_tube = dest_validation_tube(validation_tuberacks_array, current_tube)
         ss24_current_vol = liquid_transfer(used_pipette, validation_sample_vol, ss24_current_vol,
-                                           temp_falcons_rack('B2'),
+                                           temp_falcons_rack('A2'),
                                            destination_tube)
+        print('Dilutions from SS#24 transferred into tube ', destination_tube, 'VS#', current_tube)
 
 
+# custom method for transferring the liquid
 def liquid_transfer(used_pipette, transfer_vol, current_vol, source, destination):
     used_pipette.pick_up_tip()
     if (transfer_vol > 0) and (transfer_vol <= 50) and (transfer_vol > 100) and (transfer_vol < 1000):
@@ -351,12 +354,11 @@ def source_aspirating_height(current_vol, source):
 
 # selecting proper tube rack for validation tubes iteration
 def dest_validation_tube(validation_tuberacks_array, iteration):
-    global current_rack
+    global dest_current_rack
     tubes_amount_in_rack = 35
     if iteration % tubes_amount_in_rack == 0 and iteration != 0:
-        current_rack = current_rack + 1
-    print('ZROB MI TUTEJ PRINTA: ',validation_tuberacks_array[current_rack][iteration - (tubes_amount_in_rack * current_rack)])
-    return validation_tuberacks_array[current_rack][iteration - (tubes_amount_in_rack * current_rack)]
+        dest_current_rack = dest_current_rack + 1
+    return validation_tuberacks_array[dest_current_rack][iteration - (tubes_amount_in_rack * dest_current_rack)]
 
 
 # which pipette should be used
@@ -373,10 +375,38 @@ def blow_outs(times, pipette):
         pipette.blow_out()
 
 
+# method for checking if the concentration of SS#24 is greater than concentration of Donor Plasma
+def dp_and_ss24_conc_comparison(ss24_conc, dp_conc):
+    if ss24_conc < dp_conc:
+        robot.comment('Concentration of SS#24 is lower than Donor Plasma concentration.'
+                      'Change the desired concentration of SS#24.')
+        sys.exit()
+
+
 # ****************************************************************************************#
 
 # invoke method
-dilutions_prep(44000, 13250, 12000, 10000, 2.0, 15.0, 503.0, 10000, 11000, 12000, 13000, 4.0, 8.7, 1500)
+dp_begin_vol_invoke = 44000
+h2o_begin_vol_invoke = 13250
+dp_spiked_begin_vol_invoke = 12000
+dilB_begin_vol_invoke = 5000
+dp_conc_invoke = 2.5
+dp_spiked_conc_invoke = 15.3
+dilB_conc_invoke = 503
+ss1_vol_invoke = 4000
+ss2_vol_invoke = 3000
+ss3_vol_invoke = 5000
+ss24_vol_invoke = 2500
+ss3_conc_invoke = 5.0
+ss24_conc_invoke = 8.0
+ss_tubes_vol_invoke = 2500
+
+dp_and_ss24_conc_comparison(ss24_conc_invoke, dp_conc_invoke)
+
+dilutions_prep(dp_begin_vol_invoke, h2o_begin_vol_invoke, dp_spiked_begin_vol_invoke, dilB_begin_vol_invoke,
+               dp_conc_invoke, dp_spiked_conc_invoke, dilB_conc_invoke,
+               ss1_vol_invoke, ss2_vol_invoke, ss3_vol_invoke, ss24_vol_invoke, ss3_conc_invoke, ss24_conc_invoke,
+               ss_tubes_vol_invoke)
 
 # VORTEX PAUSE #
 robot.pause()
@@ -393,4 +423,6 @@ robot.pause()
 robot.comment('The pipetted samples can be measured on Cobas turb device.'
               '\nIf done, press RESUME and the protocol will be executed further.')
 
-validation_samples_preparation(350, 10000, 11000, 12000, 13000)
+validation_sample_vol_invoke = 500
+validation_samples_preparation(validation_sample_vol_invoke, ss1_vol_invoke, ss2_vol_invoke, ss3_vol_invoke,
+                               ss24_vol_invoke)
