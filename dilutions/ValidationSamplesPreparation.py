@@ -347,9 +347,16 @@ def source_aspirating_height(current_vol, source):
             height = 0.0018 * current_vol - 118
             return source.top(height)
         else:
-            return source.bottom(3)
-    # else:
-    # TODO add a function for 15 ml falcon
+            return source.bottom(5)
+    else:
+        if current_vol <= 15000 and current_vol > 7000:
+            height = 0.0063 * current_vol - 115
+            return source.top(height)
+        elif current_vol <= 7000 and current_vol > 2000:
+            height = 0.0067 * current_vol - 120
+            return source.top(height)
+        elif current_vol <= 2000 and current_vol > 0:
+            return source.bottom(5)
 
 
 # selecting proper tube rack for validation tubes iteration
