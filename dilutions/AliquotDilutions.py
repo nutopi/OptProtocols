@@ -56,6 +56,13 @@ def aliquot_dil(transfer_vol):
 
         single1000.drop_tip()
 
+        # Pause for waste remove
+        if i == 52:
+            robot.pause()
+            robot.comment(
+                'Remove the waste from the trash bin.'
+                '\nThen select RESUME and the protocol will be executed further.')
+
 
 def transfer(pipette, transfer_vol, source_tube, dest_tube):
     pipette.transfer(transfer_vol,
