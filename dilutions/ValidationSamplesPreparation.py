@@ -173,8 +173,8 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
 
     # Stock Sample no. 23 - 100% Raw Donor Plasma
     dp_source_current_vol = liquid_transfer(ss_tubes_vol, dp_source_current_vol,
-                                            source_falcons_rack('A3'), ss_tubes_rack(j + 1).top(-5))
-    print(ss_tubes_vol, ' ul of Donor Plasma transferred to ss tube number ', j + 1,
+                                            source_falcons_rack('A3'), ss_tubes_rack(j).top(-5))
+    print(ss_tubes_vol, ' ul of Donor Plasma transferred to ss tube number ', j,
           'Stock Sample no. 23 () prepared.\n')
 
 
@@ -339,7 +339,7 @@ def source_aspirating_height(current_vol, source):
             height = 0.0063 * current_vol - 120
             return source.top(height)
         elif current_vol <= 7000 and current_vol > 2000:
-            height = 0.0067 * current_vol - 130
+            height = 0.0067 * current_vol - 135
             return source.top(height)
         elif current_vol <= 2000 and current_vol > 0:
             return source.bottom(5)
@@ -373,8 +373,8 @@ def dp_and_ss24_conc_comparison(ss24_conc, dp_conc):
 # invoke method
 dp_begin_vol_invoke = 45000
 h2o_begin_vol_invoke = 13000
-dp_spiked_begin_vol_invoke = 12000
-dilB_begin_vol_invoke = 8000
+dp_spiked_begin_vol_invoke = 6000
+dilB_begin_vol_invoke = 7000
 dp_conc_invoke = 2.5
 dp_spiked_conc_invoke = 15.3
 dilB_conc_invoke = 503
