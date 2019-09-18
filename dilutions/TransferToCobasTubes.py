@@ -5,7 +5,6 @@ tube_rack_35 = "tube_rack_35"
 if tube_rack_35 not in labware.list():
     tube_rack_35 = labware.create("tube_rack_35",
                                   grid=(7, 5),
-                                  grid=(7, 5),
                                   spacing=(16.25, 14.56),
                                   diameter=10,
                                   depth=41)
@@ -81,17 +80,17 @@ def which_dest_tube(dest_tube_racks_array, iteration):
 def liquid_transfer(used_pipette, transfer_vol, source, destination):
     used_pipette.pick_up_tip()
     if (transfer_vol > 0) and (transfer_vol <= 50):
-        used_pipette.aspirate(transfer_vol, source.bottom(5))
+        used_pipette.aspirate(transfer_vol, source.bottom(3))
         used_pipette.dispense(used_pipette.current_volume, destination)
 
     elif (transfer_vol > 50) and (transfer_vol <= 100):
         for i in range(2):
-            used_pipette.aspirate(transfer_vol / 2, source.bottom(5))
+            used_pipette.aspirate(transfer_vol / 2, source.bottom(3))
             used_pipette.dispense(used_pipette.current_volume, destination)
 
     elif (transfer_vol > 100) and (transfer_vol <= 150):
         for i in range(3):
-            used_pipette.aspirate(transfer_vol / 3, source.bottom(5))
+            used_pipette.aspirate(transfer_vol / 3, source.bottom(3))
             used_pipette.dispense(used_pipette.current_volume, destination)
 
     used_pipette.drop_tip()
