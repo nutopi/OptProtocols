@@ -10,13 +10,13 @@ if tube_rack_35 not in labware.list():
                                   diameter=10,
                                   depth=41)
 
-big_falcons_rack = 'big_falcons_rack'
-if big_falcons_rack not in labware.list():
-    labware.create(big_falcons_rack,
-                   grid=(3, 2),
-                   spacing=(43, 45),
-                   diameter=30,
-                   depth=76.81)
+big_falcons_rack_new = "big_falcons_rack_new"
+if big_falcons_rack_new not in labware.list():
+    big_falcons_rack_new = labware.create("big_falcons_rack_new",
+                                      grid=(3, 2),
+                                      spacing=(43, 45),
+                                      diameter=30,
+                                      depth=76.81)
 
 ss_tubes_rack = labware.load('tube_rack_35', slot='1')
 small_falcons_rack = labware.load('tube-rack-15_50ml', slot='2')
@@ -24,11 +24,11 @@ cobas_tuberack = labware.load('24-vial-rack', slot='3')
 validation_tuberack_A = labware.load('tube_rack_35', slot='4')
 validation_tuberack_B = labware.load('tube_rack_35', slot='5')
 validation_tuberack_C = labware.load('tube_rack_35', slot='6')
-h2o_and_dp_falcons_rack = labware.load('big_falcons_rack', slot='7')
+tip_rack_small_B = labware.load('opentrons-tiprack-300ul', slot='7')
 tip_rack_big_A = labware.load('tiprack-1000ul', slot='8')
-tip_rack_big_B = labware.load('tiprack-1000ul', slot='9')
+big_falcons_rack_new = labware.load('big_falcons_rack_new', slot='9')
 tip_rack_small_A = labware.load('opentrons-tiprack-300ul', slot='10')
-tip_rack_small_B = labware.load('opentrons-tiprack-300ul', slot='11')
+tip_rack_big_B = labware.load('tiprack-1000ul', slot='11')
 
 validation_tuberacks_array = [validation_tuberack_A, validation_tuberack_B, validation_tuberack_C]
 
@@ -57,19 +57,19 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
     # Donor Plasma transferring
     dp_source_current_vol = dp_begin_vol
     dp_source_current_vol = liquid_transfer(dp_vol_for_ss1, dp_source_current_vol,
-                                            h2o_and_dp_falcons_rack('A1'),
+                                            big_falcons_rack_new('A1'),
                                             small_falcons_rack('A1').top(-30))
 
     # Water transferring
     global h2o_source_current_vol
     h2o_source_current_vol = h2o_begin_vol
     h2o_source_current_vol = liquid_transfer(h2o_vol_for_ss1, h2o_source_current_vol,
-                                             h2o_and_dp_falcons_rack('B1'),
+                                             big_falcons_rack_new('B1'),
                                              small_falcons_rack('A1').top(-30))
     print('Stock Sample no. 1 in temporary falcon prepared.\n')
 
     # ******* Stock Sample no. 2 preparation - raw Donor Plasma ******* #
-    dp_source_current_vol = liquid_transfer(ss2_vol, dp_source_current_vol, h2o_and_dp_falcons_rack('A1'),
+    dp_source_current_vol = liquid_transfer(ss2_vol, dp_source_current_vol, big_falcons_rack_new('A1'),
                                             small_falcons_rack('B1').top(-30))
     print('\n', ss2_vol, '[ul] of Raw Donor Plasma was transferred. '
                          'Stock Sample no. 2 in temporary falcon prepared.')
@@ -84,12 +84,12 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
         h2o_vol_for_ss3 = ss3_vol - dp_vol_for_ss3
         print('Calculated volume of water for Stock Sample no. 3 is: ', h2o_vol_for_ss3)
         dp_source_current_vol = liquid_transfer(dp_vol_for_ss3, dp_source_current_vol,
-                                                h2o_and_dp_falcons_rack('A1'),
+                                                big_falcons_rack_new('A1'),
                                                 small_falcons_rack('C1').top(-30))
         print('Donor Plasma was transferred for Stock Sample no. 3 falcon.')
 
         h2o_source_current_vol = liquid_transfer(h2o_vol_for_ss3, h2o_source_current_vol,
-                                                 h2o_and_dp_falcons_rack('B1'),
+                                                 big_falcons_rack_new('B1'),
                                                  small_falcons_rack('C1').top(-30))
         print('Water was transferred for Stock Sample no. 3 falcon.'
               'Stock Sample no. 3 is prepared.')
@@ -103,7 +103,7 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
         print('Calculated volume of spiked Donor Plasma for Stock Sample no. 3 is: ', dp_spiked_vol_for_ss3)
 
         dp_source_current_vol = liquid_transfer(dp_vol_for_ss3, dp_source_current_vol,
-                                                h2o_and_dp_falcons_rack('A1'),
+                                                big_falcons_rack_new('A1'),
                                                 small_falcons_rack('C1').top(-30))
         print('Donor Plasma was transferred for Stock Sample no. 3 falcon.')
 
@@ -119,7 +119,7 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
     dp_spiked_vol_for_ss24 = ss24_vol - dp_vol_for_ss24
 
     dp_source_current_vol = liquid_transfer(dp_vol_for_ss24, dp_source_current_vol,
-                                            h2o_and_dp_falcons_rack('A1'),
+                                            big_falcons_rack_new('A1'),
                                             small_falcons_rack('A2').top(-30))
     print('\n', dp_vol_for_ss24, ' ul of Donor Plasma was transferred to temporary Stock Sample no. 24 falcon.')
 
@@ -135,7 +135,7 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
     for i in range(70, 20, -10):
         dp_vol_for_tubes = round(((dilB_conc - i) / (dilB_conc - dp_conc)) * ss_tubes_vol)
         dp_source_current_vol = liquid_transfer(dp_vol_for_tubes, dp_source_current_vol,
-                                                h2o_and_dp_falcons_rack('A1'),
+                                                big_falcons_rack_new('A1'),
                                                 ss_tubes_rack(j).top(-5))
         print(dp_vol_for_tubes, ' ul of Donor Plasma to', j, 'ss tube added.')
 
@@ -171,7 +171,7 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
 
         dp_vol_for_tubes = round(((dp_spiked_conc - desired_conc) / (dp_spiked_conc - dp_conc)) * ss_tubes_vol)
         dp_source_current_vol = liquid_transfer(dp_vol_for_tubes, dp_source_current_vol,
-                                                h2o_and_dp_falcons_rack('A1'),
+                                                big_falcons_rack_new('A1'),
                                                 ss_tubes_rack(j).top(-5))
         print(dp_vol_for_tubes, ' ul of Donor Plasma to', j, 'ss tube added.')
 
@@ -181,7 +181,7 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
 
     # Stock Sample no. 23 - 100% Raw Donor Plasma
     dp_source_current_vol = liquid_transfer(ss_tubes_vol, dp_source_current_vol,
-                                            h2o_and_dp_falcons_rack('A1'), ss_tubes_rack(j).top(-5))
+                                            big_falcons_rack_new('A1'), ss_tubes_rack(j).top(-5))
     print(ss_tubes_vol, ' ul of Donor Plasma transferred to ss tube number ', j,
           'Stock Sample no. 23 () prepared.\n')
 
@@ -251,7 +251,7 @@ def validation_samples_preparation(validation_sample_vol, ss1_vol, ss2_vol, ss3_
     for current_tube in range(10):
         destination_tube = dest_validation_tube(validation_tuberacks_array, current_tube)
         h2o_source_current_vol = liquid_transfer(validation_sample_vol, h2o_source_current_vol,
-                                                 h2o_and_dp_falcons_rack('B1'),
+                                                 big_falcons_rack_new('B1'),
                                                  destination_tube.top(-10))
         print('Water transferred into tube ', destination_tube, 'VS#', current_tube)
 
@@ -336,7 +336,7 @@ def liquid_transfer(transfer_vol, current_vol, source, destination):
 
 # the height of aspirating from falcon calculating
 def source_aspirating_height(current_vol, source):
-    if source == h2o_and_dp_falcons_rack('A3'):
+    if source == big_falcons_rack_new('A3'):
         if current_vol >= 5000:
             height = 0.0018 * current_vol - 128
             return source.top(height)
