@@ -142,7 +142,7 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
         dilB_vol_for_tubes = round(((i - dp_conc) / (dilB_conc - dp_conc)) * ss_tubes_vol)
         dilB_source_current_vol = liquid_transfer(dilB_vol_for_tubes, dilB_source_current_vol,
                                                   small_falcons_rack('C2'),
-                                                  ss_tubes_rack(j).top(-5))
+                                                  ss_tubes_rack(j).top(-1))
         print(dilB_vol_for_tubes, ' ul of Dilution B to', j, 'ss tube added.')
         j = j + 1
     print('The Stock Samples no. 4 - 8 preparation finished.\n')
