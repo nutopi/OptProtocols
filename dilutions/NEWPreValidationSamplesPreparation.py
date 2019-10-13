@@ -215,7 +215,7 @@ def transfer_to_turb_tubes():
     # global cobas_tube_no
     for cobas_tube_no in range(cobas_tube_no, 23):
         single1000.pick_up_tip()
-        single1000.aspirate(cobas_tubes_vol, ss_tubes_rack(i))
+        single1000.aspirate(cobas_tubes_vol, ss_tubes_rack(i).bottom(3))
         single1000.dispense(single1000.current_volume, cobas_tuberack(cobas_tube_no))
         single1000.drop_tip()
         i = i + 1
@@ -342,14 +342,15 @@ def source_aspirating_height(current_vol, source):
             return source.top(height)
         else:
             return source.bottom(5)
+
+    elif source == ss_tubes_rack():
+        return ss_tubes_rack().bottom(3)
+
     else:
-        if current_vol <= 15000 and current_vol > 7000:
-            height = 0.0063 * current_vol - 120
+        if current_vol <= 15000 and current_vol >= 7000:
+            height = 0.0063 * current_vol - 130
             return source.top(height)
-        elif current_vol <= 7000 and current_vol > 2000:
-            height = 0.0067 * current_vol - 135
-            return source.top(height)
-        elif current_vol <= 2000 and current_vol > 0:
+        elif current_vol < 7000 and current_vol > 0:
             return source.bottom(5)
 
 
