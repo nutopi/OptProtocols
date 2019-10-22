@@ -91,6 +91,7 @@ def dilutions_prep(dp_begin_vol, h2o_begin_vol, dp_spiked_begin_vol, dilB_begin_
         h2o_source_current_vol = liquid_transfer(h2o_vol_for_ss3, h2o_source_current_vol,
                                                  h2o_and_dp_big_falcons_rack('A1'),
                                                  small_falcons_rack('C1').top(-30))
+
         print('Water was transferred for Stock Sample no. 3 falcon.'
               'Stock Sample no. 3 is prepared.')
     else:
@@ -235,14 +236,12 @@ def transfer_to_turb_tubes():
 # ********         TURB TESTS PAUSE END         ************ #
 
 # method for validation sample preparation
-global dest_current_rack
 dest_current_rack = 0
-
-global current_tube
 current_tube = 0
 
 
-def validation_samples_preparation(validation_sample_vol, ss1_vol, ss2_vol, ss3_vol, ss24_vol, ss_tubes_vol):
+def validation_samples_preparation(validation_sample_vol, ss1_vol, ss2_vol, ss3_vol, ss24_vol,
+                                   ss_tubes_vol):
     global h2o_source_current_vol
     global current_tube
     global dest_current_rack
@@ -256,7 +255,6 @@ def validation_samples_preparation(validation_sample_vol, ss1_vol, ss2_vol, ss3_
         print('Water transferred into tube ', destination_tube, 'VS#', current_tube)
 
     # transferring dilution from Stock Sample no. 1 to Validation Samples no. 11 - 20
-    # global current_tube
     ss1_current_vol = ss1_vol
     for current_tube in range(current_tube + 1, 20):
         destination_tube = dest_validation_tube(validation_tuberacks_array, current_tube)
@@ -306,26 +304,26 @@ def liquid_transfer(transfer_vol, current_vol, source, destination):
         if transfer_vol >= 1000:
             single1000.aspirate(1000, source_aspirating_height(current_vol, source))
             single1000.dispense(single1000.current_volume, destination)
-            transfer_vol = transfer_vol - 1000
             current_vol = current_vol - 1000
+            transfer_vol = transfer_vol - 1000
 
         elif transfer_vol >= 100:
             single1000.aspirate(transfer_vol, source_aspirating_height(current_vol, source))
             single1000.dispense(single1000.current_volume, destination)
-            transfer_vol = 0
             current_vol = current_vol - transfer_vol
+            transfer_vol = 0
 
         elif 100 > transfer_vol > 50:
             single50.aspirate(50, source_aspirating_height(current_vol, source))
             single50.dispense(single50.current_volume, destination)
-            transfer_vol = transfer_vol - 50
             current_vol = current_vol - 50
+            transfer_vol = transfer_vol - 50
 
         elif 50 >= transfer_vol > 0:
             single50.aspirate(transfer_vol, source_aspirating_height(current_vol, source))
             single50.dispense(single50.current_volume, destination)
-            transfer_vol = 0
             current_vol = current_vol - transfer_vol
+            transfer_vol = 0
 
     blow_outs(2, single1000)
     blow_outs(2, single50)
@@ -344,14 +342,18 @@ def source_aspirating_height(current_vol, source):
             return source.bottom(5)
 
     elif source == ss_tubes_rack():
-        return ss_tubes_rack().bottom(3)
+        if current_vol >= 500:
+            height = 0.023 * current_vol - 50
+            return ss_tubes_rack().top(height)
+        else:
+            return ss_tubes_rack().bottom(3)
 
     else:
-        if current_vol <= 15000 and current_vol >= 7000:
-            height = 0.0063 * current_vol - 130
+        if current_vol <= 15000 and current_vol >= 2000:
+            height = 0.0065 * current_vol - 124
             return source.top(height)
-        elif current_vol < 7000 and current_vol > 0:
-            return source.bottom(5)
+        elif current_vol < 2000 and current_vol > 0:
+            return source.bottom(3)
 
 
 # selecting proper tube rack for validation tubes iteration
@@ -417,7 +419,6 @@ transfer_to_turb_tubes()
 robot.pause()
 robot.comment('The pipetted samples can be measured on Cobas turb device.'
               '\nIf done, press RESUME and the protocol will be executed further.')
-
 validation_sample_vol_invoke = 500
 validation_samples_preparation(validation_sample_vol_invoke, ss1_vol_invoke, ss2_vol_invoke, ss3_vol_invoke,
                                ss24_vol_invoke, ss_tubes_vol_invoke)
